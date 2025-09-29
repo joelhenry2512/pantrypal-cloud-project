@@ -1,0 +1,78 @@
+PANTRYPAL CLOUD COMPUTING PROJECT - ARCHITECTURE CONCEPT MAP
+
+┌─────────────────────────────────────────────────────────────────────────────────┐
+│                                    USER                                        │
+│                              (Web Browser)                                     │
+└─────────────────────┬───────────────────────────────────────────────────────────┘
+                      │ HTTPS Request
+                      ▼
+┌─────────────────────────────────────────────────────────────────────────────────┐
+│                              S3 STATIC WEBSITE                                 │
+│  ┌─────────────────┐  ┌─────────────────┐  ┌─────────────────┐                │
+│  │   index.html    │  │   script.js     │  │   style.css     │                │
+│  │  (Frontend UI)  │  │ (JavaScript)    │  │   (Styling)     │                │
+│  └─────────────────┘  └─────────────────┘  └─────────────────┘                │
+└─────────────────────┬───────────────────────────────────────────────────────────┘
+                      │ API Call to /chatbot
+                      ▼
+┌─────────────────────────────────────────────────────────────────────────────────┐
+│                              API GATEWAY                                       │
+│  ┌─────────────────────────────────────────────────────────────────────────┐  │
+│  │  REST API Endpoint: /chatbot (POST)                                   │  │
+│  │  - CORS Enabled                                                       │  │
+│  │  - Lambda Integration                                                 │  │
+│  └─────────────────────────────────────────────────────────────────────────┘  │
+└─────────────────────┬───────────────────────────────────────────────────────────┘
+                      │ Invoke Lambda Function
+                      ▼
+┌─────────────────────────────────────────────────────────────────────────────────┐
+│                              LAMBDA FUNCTION                                   │
+│  ┌─────────────────────────────────────────────────────────────────────────┐  │
+│  │  Function: LF0-ChatHandler                                            │  │
+│  │  Runtime: Python 3.9                                                  │  │
+│  │  Handler: lambda_function.lambda_handler                               │  │
+│  │                                                                       │  │
+│  │  Process:                                                             │  │
+│  │  1. Parse JSON request body                                          │  │
+│  │  2. Extract user message                                              │  │
+│  │  3. Generate response                                                 │  │
+│  │  4. Return JSON with CORS headers                                     │  │
+│  └─────────────────────────────────────────────────────────────────────────┘  │
+└─────────────────────┬───────────────────────────────────────────────────────────┘
+                      │ JSON Response
+                      ▼
+┌─────────────────────────────────────────────────────────────────────────────────┐
+│                              RESPONSE FLOW                                     │
+│  ┌─────────────────────────────────────────────────────────────────────────┐  │
+│  │  API Gateway → S3 Website → User Browser                                │  │
+│  │  Response: {"response": "You said: [user message]"}                    │  │
+│  └─────────────────────────────────────────────────────────────────────────┘  │
+└─────────────────────────────────────────────────────────────────────────────────┘
+
+DATA FLOW:
+1. User types message in S3-hosted website
+2. JavaScript (script.js) sends POST request to API Gateway
+3. API Gateway routes to Lambda function
+4. Lambda processes message and returns response
+5. Response flows back to user's browser
+6. Message appears in chat interface
+
+TECHNOLOGY STACK:
+┌─────────────────┐  ┌─────────────────┐  ┌─────────────────┐  ┌─────────────────┐
+│   AWS S3        │  │  API Gateway    │  │   AWS Lambda    │  │   IAM Roles     │
+│   (Static Host) │  │  (REST API)    │  │   (Backend)     │  │   (Permissions) │
+└─────────────────┘  └─────────────────┘  └─────────────────┘  └─────────────────┘
+
+SECURITY & PERMISSIONS:
+- S3 Bucket: Public read access for website files
+- API Gateway: CORS enabled for cross-origin requests
+- Lambda: Execution role for API Gateway integration
+- IAM: User permissions for AWS resource management
+
+FILES STRUCTURE:
+pantrypal-frontend/
+├── index.html          (Main HTML page)
+├── script.js           (Frontend JavaScript)
+├── style.css           (CSS styling)
+├── lambda_function.py  (Lambda function code)
+└── aics-swagger.yaml   (API Gateway specification)

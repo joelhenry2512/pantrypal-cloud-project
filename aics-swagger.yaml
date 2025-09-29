@@ -1,0 +1,41 @@
+swagger: "2.0"
+info:
+  title: "PantryPal Chatbot API"
+  description: "API for PantryPal chatbot functionality"
+  version: "1.0.0"
+schemes:
+  - "https"
+paths:
+  /chatbot:
+    post:
+      summary: "Send message to chatbot"
+      description: "Send a user message to the chatbot and receive a response"
+      consumes:
+        - "application/json"
+      produces:
+        - "application/json"
+      parameters:
+        - name: "body"
+          in: "body"
+          required: true
+          schema:
+            type: "object"
+            properties:
+              message:
+                type: "string"
+                description: "The user's message to the chatbot"
+            required:
+              - "message"
+      responses:
+        200:
+          description: "Successful response from chatbot"
+          schema:
+            type: "object"
+            properties:
+              response:
+                type: "string"
+                description: "The chatbot's response"
+        400:
+          description: "Bad request"
+        500:
+          description: "Internal server error"
