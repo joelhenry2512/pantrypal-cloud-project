@@ -1,15 +1,16 @@
+// Clean PantryPal Chatbot JavaScript
 document.addEventListener('DOMContentLoaded', () => {
     const chatForm = document.getElementById('chat-form');
     const userInput = document.getElementById('user-input');
     const chatMessages = document.getElementById('chat-messages');
 
-    // !!! IMPORTANT !!!
-    // REPLACE THIS URL WITH YOUR ACTUAL API GATEWAY ENDPOINT URL
-    const apiGatewayUrl = 'https://z8im1nlcm2.execute-api.us-east-1.amazonaws.com/dev'; 
+    // API Gateway URL - UPDATE THIS WITH YOUR ACTUAL URL
+    const apiGatewayUrl = 'https://7alnh8dk1a.execute-api.us-east-1.amazonaws.com/dev';
 
-    // Display the initial welcome message from the bot
+    // Display welcome message
     displayMessage("Hi! I'm PantryPal. What ingredients do you have today?", 'bot');
 
+    // Handle form submission
     chatForm.addEventListener('submit', async (event) => {
         event.preventDefault();
         const userMessage = userInput.value.trim();
@@ -27,7 +28,7 @@ document.addEventListener('DOMContentLoaded', () => {
         messageElement.classList.add('message', `${sender}-message`);
         messageElement.textContent = message;
         chatMessages.appendChild(messageElement);
-        chatMessages.scrollTop = chatMessages.scrollHeight; // Auto-scroll to the latest message
+        chatMessages.scrollTop = chatMessages.scrollHeight;
     }
     
     function showTypingIndicator() {
@@ -47,33 +48,38 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     async function sendMessageToBot(userMessage) {
+        // Check if API Gateway URL is configured
         if (apiGatewayUrl === 'YOUR_API_GATEWAY_URL_HERE') {
             removeTypingIndicator();
-            displayMessage("Error: API Gateway URL is not configured. Please update it in script.js.", 'bot');
+            displayMessage("Error: API Gateway URL is not configured. Please update it in script.js", 'bot');
             return;
         }
 
         try {
-            // Request body format for the Lambda function
-            const requestBody = {
-                message: userMessage
-            };
-
+            console.log('Sending message to:', apiGatewayUrl + '/chatbot');
+            
             const response = await fetch(apiGatewayUrl + '/chatbot', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
                 },
-                body: JSON.stringify(requestBody)
+                body: JSON.stringify({
+                    message: userMessage
+                })
             });
 
+            console.log('Response status:', response.status);
+            console.log('Response headers:', response.headers);
+
             if (!response.ok) {
-                throw new Error(`API request failed with status ${response.status}`);
+                const errorText = await response.text();
+                console.error('API Error:', errorText);
+                throw new Error(`API request failed with status ${response.status}: ${errorText}`);
             }
 
             const responseData = await response.json();
+            console.log('Response data:', responseData);
             
-            // Extract the response from the Lambda function
             const botResponse = responseData.response || "Sorry, I couldn't get a response.";
             
             removeTypingIndicator();
